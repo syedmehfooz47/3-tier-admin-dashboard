@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Cache node_modules using package.json
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --only=production
 
 # Copy all source files for compilation/validation
 COPY . .
@@ -20,10 +20,10 @@ COPY --from=builder /app/node_modules ./node_modules
 
 # Copy only runtime source files to reduce image size and attack surface
 COPY controllers ./controllers
-COPY data ./data
 COPY database ./database
 COPY models ./models
 COPY routers ./routers
+COPY middlewares ./middlewares
 COPY index.js ./index.js
 COPY package.json ./package.json
 

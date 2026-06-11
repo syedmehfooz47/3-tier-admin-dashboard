@@ -1,25 +1,23 @@
-# Containerized 3-Tier Admin Dashboard (DevOps Showcase)
+# 3-Tier Admin Dashboard
 
-A production-grade, containerized **3-Tier Admin Dashboard** application built and optimized to demonstrate key DevOps practices including **multi-stage build optimizations**, **reverse-proxy routing**, **automated static asset management**, and **Docker container lifecycle orchestrations**.
-
----
-
-## 🔗 Project Links
-*   **Live Demo:** [https://3-tier-admin-dashboard.projects.syedmehfooz.com](https://3-tier-admin-dashboard.projects.syedmehfooz.com)
-*   **GitHub Repository:** [github.com/syedmehfooz47/3-tier-admin-dashboard](https://github.com/syedmehfooz47/3-tier-admin-dashboard)
-
-## 👤 Author Contact
-*   **Name:** Syed Mehfooz C S
-*   **Email:** [hello@syedmehfooz.com](mailto:hello@syedmehfooz.com)
-*   **GitHub:** [@syedmehfooz47](https://github.com/syedmehfooz47)
+A full-stack, containerized **3-Tier Admin Dashboard** application built with React, Node.js, Express, and MongoDB. It demonstrates modern web development practices, including Role-Based Access Control (RBAC), HttpOnly cookie authentication, and robust Docker container orchestration.
 
 ---
 
-## 🏗️ 4-Container 3-Tier Architecture Diagram
+## 🌟 Key Features
+
+*   **Role-Based Access Control (RBAC):** Three distinct user roles (`superadmin`, `admin`, `user`) with fine-grained access permissions. Only Super Admins can assign or change roles.
+*   **Secure Authentication:** Uses JSON Web Tokens (JWT) delivered securely via backend `HttpOnly` cookies, preventing client-side storage vulnerabilities and bypassing strict browser privacy blocking (like disabled `localStorage`).
+*   **Modern Frontend:** Built with React, Vite (for blazing fast builds), and styled with responsive, glassmorphism-inspired modern CSS.
+*   **Containerized Architecture:** Fully dockerized environment with multi-stage builds for minimal container sizes and optimal performance.
+
+---
+
+## 🏗️ 4-Container 3-Tier Architecture
 
 This application decouples the frontend, backend, database, and ingress proxy into 4 specialized containers running on an isolated virtual bridge network.
 
-```
+```text
                       ┌──────────────────────┐
                       │    Client Browser    │
                       └──────────┬───────────┘
@@ -34,8 +32,8 @@ This application decouples the frontend, backend, database, and ingress proxy in
              │ (Serves UI static assets)             │ (Proxies API requests)
              ▼                                       ▼
 ┌─────────────────────────┐             ┌─────────────────────────┐
-│     React Frontend      │             │   Node.js / Express     │
-│   Tier 1 (client_cont)  │             │   Logic Tier 2 (server)  │
+│ React + Vite Frontend   │             │   Node.js / Express     │
+│  Tier 1 (client_cont)   │             │  Logic Tier 2 (server)  │
 └─────────────────────────┘             └────────────┬────────────┘
                                                      │ (Port 27017)
                                                      ▼
@@ -45,9 +43,9 @@ This application decouples the frontend, backend, database, and ingress proxy in
                                         └─────────────────────────┘
 ```
 
-*   **Nginx Gateway Proxy (`nginx_cont`):** The ingress router on port `80` (mapped to host `80:80`). It acts as a reverse proxy, dispatching `/api/*` to the backend and all other requests to the React frontend container.
-*   **Presentation Tier (`client_cont`):** Holds the built React + Redux application. Rather than running a heavy Node server, a lightweight internal Nginx engine serves the compiled assets on port `3000`.
-*   **Application Tier (`server_cont`):** Express REST API hosting all business routes on port `9000`.
+*   **Nginx Gateway Proxy (`nginx_cont`):** The ingress router on port `80`. It acts as a reverse proxy, dispatching `/api/*` to the backend and all other requests to the React frontend container.
+*   **Presentation Tier (`client_cont`):** A lightweight internal Nginx engine that serves the highly-optimized static assets built by Vite on port `3000`.
+*   **Application Tier (`server_cont`):** Express REST API handling authentication, role verification, and business logic on port `9000`.
 *   **Data Tier (`mongodb_cont`):** MongoDB 6.0 engine isolated inside the Docker network.
 
 ---
@@ -61,52 +59,31 @@ Make sure you have **Docker** and **Docker Compose** installed on your system.
 To build all images and run the application, execute:
 
 ```bash
-docker-compose up --build
+docker-compose up --build -d
 ```
 
 Navigate to **[http://localhost](http://localhost)** to access the running system.
+
+### Default Credentials
+On the first startup, the backend will automatically seed a default Super Admin account into the database:
+*   **Username:** `superadmin`
+*   **Password:** `superadmin123`
 
 ---
 
 ## 🛠️ DevOps & Architectural Design Optimizations
 
 ### 1. Multi-Stage Build Optimizations
-To minimize container footprints, secure dependencies, and speed up CI/CD pipeline building, both the frontend and backend Dockerfiles utilize advanced multi-stage layer caching:
+To minimize container footprints and speed up deployment, both the frontend and backend Dockerfiles utilize multi-stage builds:
+*   **Frontend (`client/Dockerfile`):** Uses Node to run `vite build`, then copies only the static `/dist` files into a lightweight `nginx:alpine` container.
+*   **Backend (`server/Dockerfile`):** Copies only essential files and production dependencies, bypassing development overhead.
 
-#### **Frontend (`client/Dockerfile`):**
-*   **Build Stage:** Pulls `node:18-alpine` to install dependencies via `npm ci` and compiles the React source code.
-*   **Runtime Stage:** Pulls `nginx:1.25-alpine` (~30MB footprint) and copies only the compiled build files.
-*   **Impact:** By discarding Node.js runtimes and dev tools (like `react-scripts`), the final frontend container size is reduced by **90%** (from ~350MB down to ~35MB).
+### 2. Network Isolation & Zero-CORS
+*   **Docker Network Topology:** A custom Docker bridge network (`admin-dashboard-network`) interconnects all containers. The database and backend API are completely shielded from the outside host.
+*   **Zero-CORS Architecture:** Because Nginx routes both the frontend UI and backend API requests from the exact same domain and port (`80`), the browser views them as coming from the same origin, completely bypassing complex CORS issues and preflight requests.
 
-#### **Backend (`server/Dockerfile`):**
-*   **Build Stage:** Installs production dependencies (`npm ci --only=production`) in a builder container.
-*   **Runtime Stage:** Pulls a fresh `node:18-alpine` and copies only the production dependencies and necessary runtime directories (`controllers/`, `data/`, `database/`, `models/`, `routers/`, `index.js`).
-*   **Execution:** Bypasses npm entirely and starts Node directly (`node index.js`) to avoid spawning redundant child processes and handling signals gracefully.
+### 3. Graceful Container Lifecycle
+*   **Healthchecks & Dependencies:** `docker-compose.yml` uses strict `depends_on: service_healthy` hooks. The backend waits for MongoDB to be fully ready before starting, and the client waits for the backend.
 
----
-
-### 2. Network Isolation & CORS Elimination
-*   **Docker Network Topology:** We created and configured a custom Docker bridge network named `admin-dashboard-network` to interconnect all containers. The database (`mongodb_cont`) and the backend API (`server_cont`) have no public ports exposed directly to the outside host, protecting them from external scan or intrusion.
-*   **Zero-CORS Architecture:** Because Nginx routes both the frontend UI and backend API requests from the same port `80`, the browser views them as coming from the same origin, completely removing the need for complex CORS configurations in Express production environments.
-
----
-
-### 3. Graceful Container Lifecycle (Healthchecking)
-Startup timing is critical in multi-tier applications. To prevent backend crashes when MongoDB is starting up:
-1.  **Database Healthcheck:** MongoDB is configured to run health evaluations (`mongosh --eval "db.adminCommand('ping')"`).
-2.  **Server Dependency Hook:** The backend container contains a `depends_on` rule waiting for the database to report `service_healthy`.
-3.  **Application Healthcheck:** The backend service runs local checks (`wget --spider`) to report its health status.
-4.  **Frontend/Proxy Hook:** Nginx and frontend containers launch only after the API server and database are fully operational.
-
----
-
-### 4. Self-Seeding Database Lifecycle
-To make the codebase a turn-key clone-and-run solution, the backend features an auto-seeding handler. On initial container initialization:
-*   The backend verifies if the MongoDB collection has entries.
-*   If empty, it automatically triggers a database seed using the mock datasets in `server/data/index.js` (populating users, products, sales, and transactions in seconds).
-
----
-
-### 5. Persistent Data Layer (Docker Volumes)
-*   A dedicated Docker named volume `mongodb_data` is mounted to `/data/db` on the MongoDB container.
-*   **Data Durability:** Using named volumes ensures that all database records and seeded files remain safe and persist even if the running containers are harmed, stopped, destroyed, or rebuilt.
+### 4. Resilient Storage
+*   **Docker Volumes:** MongoDB data is persisted using the `mongodb_data` named volume, ensuring data durability across container restarts and rebuilds.
