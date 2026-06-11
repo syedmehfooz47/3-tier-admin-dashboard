@@ -4,6 +4,13 @@ A full-stack, containerized **3-Tier Admin Dashboard** application built with Re
 
 ---
 
+## 🔗 Links & Contact
+*   **Live Demo:** [https://3-tier-admin-dashboard.projects.syedmehfooz.com](https://3-tier-admin-dashboard.projects.syedmehfooz.com/)
+*   **GitHub Repository:** [github.com/syedmehfooz47/3-tier-admin-dashboard](https://github.com/syedmehfooz47/3-tier-admin-dashboard)
+*   **Author Email:** [hello@syedmehfooz.com](mailto:hello@syedmehfooz.com)
+
+---
+
 ## 🌟 Key Features
 
 *   **Role-Based Access Control (RBAC):** Three distinct user roles (`superadmin`, `admin`, `user`) with fine-grained access permissions. Only Super Admins can assign or change roles.
