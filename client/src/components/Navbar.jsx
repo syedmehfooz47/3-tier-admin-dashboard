@@ -2,7 +2,8 @@ import React,{ useState } from 'react'
 import { LightModeOutlined,DarkModeOutlined,Menu as MenuIcon,Search,SettingsOutlined,ArrowDropDownOutlined } from '@mui/icons-material'
 import FlexBetween from 'components/FlexBetween'
 import { useDispatch } from 'react-redux'
-import { setMode } from 'state'
+import { setMode, setLogout } from 'state'
+import { useNavigate } from 'react-router-dom'
 import ProfileImage from 'assets/profile.jpeg'
 import { AppBar,Toolbar,useTheme,InputBase,IconButton,Button,Box,Typography,Menu,MenuItem } from '@mui/material'
 
@@ -12,6 +13,7 @@ const Navbar = ({
     setIsSidebarOpen
 }) =>{
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const theme = useTheme()
 
     const [anchorEl,setAnchorEl] = useState(null)
@@ -76,7 +78,11 @@ const Navbar = ({
                                sx={{ color:theme.palette.secondary[300], fontSize:"25px" }} />
                         </Button>
                         <Menu anchorEl={anchorEl} open={isOpen} onClose={handleClose} anchorOrigin={{ vertical:"bottom", horizontal:"center" }}>
-                            <MenuItem onClick={handleClose}>
+                            <MenuItem onClick={() => {
+                                dispatch(setLogout());
+                                handleClose();
+                                navigate('/login');
+                            }}>
                                 Log Out
                             </MenuItem>
                         </Menu>

@@ -9,6 +9,7 @@ import clientRoutes from './routers/clients.js';
 import salesRoutes from './routers/sales.js';
 import managementRoutes from './routers/management.js';
 import generalRoutes from './routers/general.js';
+import authRoutes from './routers/auth.js';
 
 // Import Models for Seeding
 import Product from './models/Product.js';
@@ -49,6 +50,7 @@ app.get("/", (req, res) => {
     });
 });
 
+app.use("/auth", authRoutes);
 app.use("/client", clientRoutes);
 app.use("/general", generalRoutes);
 app.use("/management", managementRoutes);

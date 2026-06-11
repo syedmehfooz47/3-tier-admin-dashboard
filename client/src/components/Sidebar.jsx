@@ -114,8 +114,8 @@ const Sidebar = ({
             isSidebarOpen && (
             <Drawer
                 open={isSidebarOpen}
-                onClose={() =>setIsSidebarOpen(false)}
-                variant="persistent"
+                onClose={() => setIsSidebarOpen(false)}
+                variant={isNonMobile ? "persistent" : "temporary"}
                 anchor="left"
                 sx={{
                     width:drawerWidth,
