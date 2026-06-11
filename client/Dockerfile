@@ -9,7 +9,7 @@ RUN npm ci
 
 # Copy application source code and compile
 COPY . .
-ENV REACT_APP_BASE_URL=/api
+ENV REACT_APP_BASE_URL=/api/
 RUN npm run build
 
 # Stage 2: Web server runtime stage (Nginx Alpine environment)
