@@ -11,6 +11,17 @@ A full-stack, containerized **3-Tier Admin Dashboard** application built with Re
 
 ---
 
+## 📸 App Preview
+
+<div align="center">
+
+
+<img src="Assets/dashboard.png" alt="Tomato Menu Page" width="80%" style="border-radius: 8px;" />
+
+
+</div>
+
+
 ## 🌟 Key Features
 
 *   **Role-Based Access Control (RBAC):** Three distinct user roles (`superadmin`, `admin`, `user`) with fine-grained access permissions. Only Super Admins can assign or change roles.
